@@ -1,0 +1,137 @@
+#include "mbed.h"
+#include "platform/mbed_thread.h"
+#include "BufferedSerial.h"
+#include "stdio.h"
+
+// Blinking rate in milliseconds
+#define BLINKING_RATE_MS                                                    100
+
+BufferedSerial async_port(D5,D4); //D5,D4两个
+PwmOut left_en(D10);   //left
+PwmOut right_en(A5);  //right
+DigitalOut L1(D2);  //set as high
+DigitalOut L2(D3);  //set as low
+DigitalOut R1(D11);  //set as high
+DigitalOut R2(D12);  //set as low
+
+int main()
+{   //Initialise the period and enable
+    L1=1;
+    L2=0;
+    R1=1;
+    R2=0;
+    // Initialise the UART 
+    async_port.set_format(8,BufferedSerial::None ,1);
+    async_port.set_baud(19200);
+    char buf[15] = {0};
+    float left,right,pid_out;
+    int usf,usr;
+    while (1) {
+        if(async_port.readable()==1)
+        {   thread_sleep_for(2);
+            async_port.read(buf,15);
+                L1=1;  //set direction
+                L2=0;
+                R1=1;
+                R2=0;
+            //calculate duty cycle of left and right
+            pid_out=float(int(buf[0])*2)-100;
+            left=25+pid_out;
+            right=25-pid_out;
+            if(left>100)
+                left=99;
+            if(right>100)
+                right=99;
+            //obtain the distance from front and right
+            usf=int(buf[1]);
+            usr=int(buf[2]);
+            //print the distance and the left right speed
+            if (usf<10){
+                break;
+                }
+            if (left<0){
+                L1=0;
+                L2=1;}
+            if (right<0){
+                R1=0;
+                R2=1;}
+            printf("    ");
+            printf("%d",int(left));
+            printf("    ");
+            printf("%d",int(right));
+            printf("    ");
+            printf("%d",int(usf));
+            printf("    ");
+            printf("%d\n",int(usr));
+            left_en.write(abs(left/100));
+            right_en.write(abs(right/100));}}
+            
+            //write the speed into L298N
+            //turn90degree 
+            L1=1;
+            L2=0;
+            R1=0;
+            R2=1;
+            left_en.write(0.7);
+            right_en.write(0.7);
+            thread_sleep_for(1250);
+            //cross the bridge
+            L1=1;
+            L2=0;
+            R1=1;
+            R2=0;
+            left_en.write(0.6);
+            right_en.write(0.6);
+            thread_sleep_for(10000);
+            
+            L1=1;
+            L2=0;
+            R1=0;
+            R2=1;
+            left_en.write(0.7);
+            right_en.write(0.7);
+            thread_sleep_for(1000);
+            
+            //continue line tracking
+            
+    while (1) {
+        if(async_port.readable()==1)
+        {   thread_sleep_for(2);
+            async_port.read(buf,15);
+                L1=1;  //set direction
+                L2=0;
+                R1=1;
+                R2=0;
+            //calculate duty cycle of left and right
+            pid_out=float(int(buf[0])*2)-100;
+            left=25+pid_out;
+            right=25-pid_out;
+            if(left>100)
+                left=99;
+            if(right>100)
+                right=99;
+            //obtain the distance from front and right
+            usf=int(buf[1]);
+            usr=int(buf[2]);
+            //print the distance and the left right speed
+
+            if (left<0){
+                L1=0;
+                L2=1;}
+            if (right<0){
+                R1=0;
+                R2=1;}
+            printf("    ");
+            printf("%d",int(left));
+            printf("    ");
+            printf("%d",int(right));
+            printf("    ");
+            printf("%d",int(usf));
+            printf("    ");
+            printf("%d\n",int(usr));
+            left_en.write(abs(left/100));
+            right_en.write(abs(right/100));}}
+            
+
+            
+}

@@ -1,0 +1,30 @@
+#include "mbed.h"
+#include "platform/mbed_thread.h"
+
+
+// Blinking rate in milliseconds
+#define BLINKING_RATE_MS                                                    100
+
+
+PwmOut left_en(D10);   //left
+PwmOut right_en(A5);  //right
+DigitalOut L1(D2);  //set as high
+DigitalOut L2(D3);  //set as low
+DigitalOut R1(D11);  //set as high
+DigitalOut R2(D12);  //set as low
+
+int main()
+{   //Initialise the period and enable
+    L1=1;
+    L2=0;
+    R1=1;
+    R2=0;
+
+    float left,right;
+    while(1){
+    left=30;
+    right=30;  //左右两遍速度可能及时设置为30两边实际速度也不一样，先调成一样的实际速度，再同时减小某个值到能刚好上桥
+    left_en.write(abs(left/100));
+    right_en.write(abs(right/100));
+}
+}

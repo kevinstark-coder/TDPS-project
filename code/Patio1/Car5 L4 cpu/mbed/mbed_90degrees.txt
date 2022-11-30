@@ -1,0 +1,33 @@
+#include "mbed.h"
+#include "platform/mbed_thread.h"
+#include "BufferedSerial.h"
+#include "stdio.h"
+
+// Blinking rate in milliseconds
+#define BLINKING_RATE_MS                                                    100
+
+BufferedSerial async_port(D5,D4); //D5,D4两个
+PwmOut left_en(D10);   //left
+PwmOut right_en(A5);  //right
+DigitalOut L1(D2);  //set as high
+DigitalOut L2(D3);  //set as low
+DigitalOut R1(D11);  //set as high
+DigitalOut R2(D12);  //set as low
+
+int main()
+{   //Initialise the period and enable
+    while(1){
+    L1=1;
+    L2=0;
+    R1=0;
+    R2=1;
+    // Initialise the UART 
+    left_en=0.8;
+    right_en=0.8;
+    thread_sleep_for(1500);//change this
+    left_en=0;
+    right_en=0;
+    thread_sleep_for(2000);
+}
+            
+}

@@ -1,0 +1,55 @@
+#include "mbed.h"
+#include "platform/mbed_thread.h"
+#include "BufferedSerial.h"
+#include "stdio.h"
+
+// Blinking rate in milliseconds
+#define BLINKING_RATE_MS                                                    100
+
+BufferedSerial async_port(D5,D4); //D5,D4两个
+PwmOut left_en(D10);   //left
+PwmOut right_en(A5);  //right
+DigitalOut L1(D2);  //set as high
+DigitalOut L2(D3);  //set as low
+DigitalOut R1(D11);  //set as high
+DigitalOut R2(D12);  //set as low
+
+int main()
+{   //Initialise the period and enable
+    L1=1;
+    L2=0;
+    R1=1;
+    R2=0;
+    // Initialise the UART 
+    async_port.set_format(8,BufferedSerial::None ,1);
+    async_port.set_baud(19200);
+    char buf[15] = {0};
+    float left,right,pid_out;
+    int usf,usr;
+    while (1) {
+        if(async_port.readable()==1)
+        {   thread_sleep_for(2);
+            async_port.read(buf,15);
+            //calculate duty cycle of left and right
+            pid_out=float(int(buf[0])*2)-100;
+            left=35+pid_out;
+            right=15-pid_out;
+            //obtain the distance from front and right
+            usf=int(buf[1]);
+            usr=int(buf[2]);
+            //print the distance and the left right speed
+            printf("    ");
+            printf("%d",int(left));
+            printf("    ");
+            printf("%d",int(right));
+            printf("    ");
+            printf("%d",int(usf));
+            printf("    ");
+            printf("%d\n",int(usr));
+
+            //write the speed into L298N
+            left_en.write(abs(left/100));
+            right_en.write(abs(right/100));}
+            
+            
+}}
